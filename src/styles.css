@@ -237,3 +237,6 @@ button.sort { background: none; color: inherit; padding: 0; font-weight: 600; }
 .matchup-table td { border-top: 1px solid var(--line); }
 .matchup-table tr.win td { background: var(--win-bg); }
 .matchup-table tr.loss td { background: var(--loss-bg); }
+
+.site-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); text-align: center; color: var(--muted); font-size: 0.85rem; }
+.site-footer p { margin: 4px 0; }

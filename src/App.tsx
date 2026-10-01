@@ -165,6 +165,11 @@ export default function App() {
           )
         )}
       </main>
+
+      <footer className="site-footer">
+        <p>© {new Date().getFullYear()} Steven Zhu. All rights reserved.</p>
+        <p>Shoutout to Yannick Vela, whose original Excel sheets and manual data tracking inspired this site.</p>
+      </footer>
     </div>
   );
 }

@@ -1,0 +1,88 @@
+import { describe, expect, it } from "vitest";
+import {
+  allPlayRecord, actualRecord, rankFrequency, scheduleSwap, shakeup, summary, weeklyRanks,
+} from "./stats";
+import { demoLeague } from "./demo";
+import type { Team, Week } from "./types";
+
+const teams: Team[] = [1, 2, 3, 4].map((id) => ({ rosterId: id, name: `T${id}`, owner: "", avatar: null }));
+
+// Week 1: 1v2, 3v4. Week 2: 1v3, 2v4.
+const weeks: Week[] = [
+  { week: 1, scores: { 1: 100, 2: 90, 3: 120, 4: 80 }, opponents: { 1: 2, 2: 1, 3: 4, 4: 3 } },
+  { week: 2, scores: { 1: 70, 2: 110, 3: 95, 4: 95 }, opponents: { 1: 3, 3: 1, 2: 4, 4: 2 } },
+];
+
+describe("weeklyRanks", () => {
+  it("ranks by points with ties sharing the better rank", () => {
+    expect(weeklyRanks(weeks[0])).toEqual({ 3: 1, 1: 2, 2: 3, 4: 4 });
+    expect(weeklyRanks(weeks[1])).toEqual({ 2: 1, 3: 2, 4: 2, 1: 4 });
+  });
+});
+
+describe("shakeup", () => {
+  it("compares x and y every week and mirrors", () => {
+    const s = shakeup(teams, weeks);
+    expect(s[1][2]).toEqual({ wins: 1, losses: 1, ties: 0 });
+    expect(s[3][4]).toEqual({ wins: 1, losses: 0, ties: 1 });
+    expect(s[4][3]).toEqual({ wins: 0, losses: 1, ties: 1 });
+  });
+
+  it("is symmetric across the demo league", () => {
+    const { teams: t, weeks: w } = demoLeague();
+    const s = shakeup(t, w);
+    for (const x of t) for (const y of t) {
+      if (x === y) continue;
+      expect(s[x.rosterId][y.rosterId].wins).toBe(s[y.rosterId][x.rosterId].losses);
+    }
+  });
+});
+
+describe("scheduleSwap", () => {
+  it("uses y's opponents, swapping in y when y played x", () => {
+    // Team 1 with team 2's schedule: wk1 2 played 1 -> 1 vs 2 (100>90 W); wk2 2 played 4 -> 1 vs 4 (70<95 L).
+    expect(scheduleSwap(teams, weeks)[1][2]).toEqual({ wins: 1, losses: 1, ties: 0 });
+  });
+
+  it("with your own schedule equals your actual record", () => {
+    const { teams: t, weeks: w } = demoLeague();
+    const s = scheduleSwap(t, w);
+    for (const x of t) expect(s[x.rosterId][x.rosterId]).toEqual(actualRecord(x.rosterId, w));
+  });
+});
+
+describe("records", () => {
+  it("computes actual and all-play records", () => {
+    expect(actualRecord(1, weeks)).toEqual({ wins: 1, losses: 1, ties: 0 });
+    expect(allPlayRecord(4, weeks)).toEqual({ wins: 1, losses: 4, ties: 1 });
+  });
+});
+
+describe("rankFrequency", () => {
+  it("counts own and opponent weekly ranks", () => {
+    expect(rankFrequency(teams, weeks)[1]).toEqual([0, 1, 0, 1]);
+    expect(rankFrequency(teams, weeks, true)[1]).toEqual([0, 1, 1, 0]);
+  });
+
+  it("each column sums to the number of weeks (no ties in demo)", () => {
+    const { teams: t, weeks: w } = demoLeague();
+    const f = rankFrequency(t, w);
+    for (let r = 0; r < t.length; r++) {
+      expect(t.reduce((sum, x) => sum + f[x.rosterId][r], 0)).toBe(w.length);
+    }
+  });
+});
+
+describe("summary", () => {
+  it("tracks top/bottom 3 and results against them", () => {
+    const row = summary(teams, weeks).find((r) => r.rosterId === 1)!;
+    expect(row.avgRank).toBe(3);
+    expect(row.avgOppRank).toBe(2.5);
+    expect(row.top3).toBe(1);
+    // With 4 teams, "top 3" is ranks 1-3 and "bottom 3" is ranks 2-4.
+    expect(row.bottom3).toBe(2);
+    expect(row.oppTop3).toBe(2);
+    expect(row.lossesToTop3).toBe(1);
+    expect(row.winsVsBottom3).toBe(1);
+  });
+});

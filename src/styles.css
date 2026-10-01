@@ -11,6 +11,8 @@
   --bad: #c8423b;
   --win-bg: #dcefd6;
   --loss-bg: #f7dcd9;
+  --win-hover: #8fd19f;
+  --loss-hover: #ee9a94;
   --heat-good: #5fbf74;
   --heat-mid: #fbe58a;
   --heat-bad: #f07070;
@@ -36,6 +38,8 @@
     --heat-mid: #b8a14a;
     --heat-bad: #b84a4a;
     --heat-ink: #fbf6f1;
+    --win-hover: #2f6b40;
+    --loss-hover: #7a3430;
     color-scheme: dark;
   }
 }
@@ -162,8 +166,21 @@ button.sort { background: none; color: inherit; padding: 0; font-weight: 600; }
 .shakeup-card thead th { font-size: 0.8rem; color: var(--muted); }
 .shakeup-card thead th.left { font-size: 1.05rem; color: var(--ink); }
 .shakeup-card td { border-top: 1px solid var(--line); }
-.shakeup-card tr.win td { background: var(--win-bg); }
-.shakeup-card tr.loss td { background: var(--loss-bg); }
+/* Row tint: base color always visible, a stronger color slides in from the left on hover. */
+.shakeup-card tbody tr {
+  --row-bg: transparent;
+  --row-hover: var(--accent-soft);
+  --skew: 100deg;
+  background-color: var(--row-bg);
+  background-image: linear-gradient(var(--skew), var(--row-hover) 65%, transparent 100%);
+  background-repeat: no-repeat;
+  background-size: 250% 100%;
+  background-position: 100% center; /* parked off to the right: only the transparent half shows */
+  transition: background-position 0.4s ease-in-out;
+}
+.shakeup-card tbody tr:hover { background-position: 0% center; }
+.shakeup-card tr.win  { --row-bg: var(--win-bg);  --row-hover: var(--win-hover); }
+.shakeup-card tr.loss { --row-bg: var(--loss-bg); --row-hover: var(--loss-hover); }
 
 .stat-grid {
   display: grid;

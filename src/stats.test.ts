@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   allPlayRecord, actualRecord, divisionStrength, rankFrequency, scheduleSwap, shakeup, summary,
-  sumRecords, weeklyRanks, winPct,
+  matchupsVersus, sumRecords, weeklyRanks, winPct,
 } from "./stats";
 import { demoLeague } from "./demo";
 import type { Team, Week } from "./types";
@@ -10,14 +10,33 @@ const teams: Team[] = [1, 2, 3, 4].map((id) => ({ rosterId: id, name: `T${id}`, 
 
 // Week 1: 1v2, 3v4. Week 2: 1v3, 2v4.
 const weeks: Week[] = [
-  { week: 1, scores: { 1: 100, 2: 90, 3: 120, 4: 80 }, opponents: { 1: 2, 2: 1, 3: 4, 4: 3 } },
-  { week: 2, scores: { 1: 70, 2: 110, 3: 95, 4: 95 }, opponents: { 1: 3, 3: 1, 2: 4, 4: 2 } },
+  { week: 1, scores: { 1: 100, 2: 90, 3: 120, 4: 80 }, bench: { 1: 20, 2: 30, 3: 10, 4: 40 }, opponents: { 1: 2, 2: 1, 3: 4, 4: 3 } },
+  { week: 2, scores: { 1: 70, 2: 110, 3: 95, 4: 95 }, bench: { 1: 25, 2: 15, 3: 35, 4: 5 }, opponents: { 1: 3, 3: 1, 2: 4, 4: 2 } },
 ];
 
 describe("weeklyRanks", () => {
   it("ranks by points with ties sharing the better rank", () => {
     expect(weeklyRanks(weeks[0])).toEqual({ 3: 1, 1: 2, 2: 3, 4: 4 });
     expect(weeklyRanks(weeks[1])).toEqual({ 2: 1, 3: 2, 4: 2, 1: 4 });
+  });
+});
+
+describe("matchupsVersus", () => {
+  it("lists x vs y each week with scores, bench and result", () => {
+    expect(matchupsVersus(1, 4, weeks)).toEqual([
+      { week: 1, x: { score: 100, bench: 20 }, y: { score: 80, bench: 40 }, result: "win" },
+      { week: 2, x: { score: 70, bench: 25 }, y: { score: 95, bench: 5 }, result: "loss" },
+    ]);
+  });
+
+  it("skips weeks either team has no score and reports ties", () => {
+    const extra: Week[] = [
+      ...weeks,
+      { week: 3, scores: { 1: 50 }, bench: { 1: 1 }, opponents: {} },
+      { week: 4, scores: { 3: 60, 4: 60 }, bench: {}, opponents: {} },
+    ];
+    expect(matchupsVersus(3, 4, extra).map((r) => [r.week, r.result])).toEqual([[1, "win"], [2, "tie"], [4, "tie"]]);
+    expect(matchupsVersus(1, 4, extra)).toHaveLength(2);
   });
 });
 

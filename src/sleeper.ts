@@ -45,6 +45,8 @@ interface SleeperMatchup {
   roster_id: number;
   matchup_id: number | null;
   points: number;
+  starters?: string[] | null;
+  players_points?: Record<string, number> | null;
 }
 
 export interface LeagueSummary {
@@ -77,10 +79,16 @@ function lastCompletedWeek(league: SleeperLeague, state: SleeperState): number {
 
 function toWeek(week: number, matchups: SleeperMatchup[]): Week | null {
   const scores: Record<number, number> = {};
+  const bench: Record<number, number> = {};
   const opponents: Record<number, number> = {};
   const byMatchup = new Map<number, number[]>();
   for (const m of matchups) {
     scores[m.roster_id] = m.points ?? 0;
+    const started = new Set(m.starters ?? []);
+    const benchTotal = Object.entries(m.players_points ?? {})
+      .filter(([player]) => !started.has(player))
+      .reduce((sum, [, pts]) => sum + (pts ?? 0), 0);
+    bench[m.roster_id] = Math.round(benchTotal * 100) / 100;
     if (m.matchup_id == null) continue;
     byMatchup.set(m.matchup_id, [...(byMatchup.get(m.matchup_id) ?? []), m.roster_id]);
   }
@@ -91,7 +99,7 @@ function toWeek(week: number, matchups: SleeperMatchup[]): Week | null {
   }
   // A week nobody has scored in hasn't been played yet.
   if (!Object.values(scores).some((p) => p > 0)) return null;
-  return { week, scores, opponents };
+  return { week, scores, bench, opponents };
 }
 
 async function seasonHistory(league: SleeperLeague) {

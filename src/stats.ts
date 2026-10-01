@@ -66,6 +66,30 @@ export function scheduleSwap(teams: Team[], weeks: Week[]): Record<number, Recor
   return out;
 }
 
+export interface MatchupRow {
+  week: number;
+  x: { score: number; bench: number };
+  y: { score: number; bench: number };
+  result: "win" | "loss" | "tie";
+}
+
+/** Week-by-week view of x playing y, from x's side. Weeks either team has no score are skipped. */
+export function matchupsVersus(x: number, y: number, weeks: Week[]): MatchupRow[] {
+  const rows: MatchupRow[] = [];
+  for (const w of weeks) {
+    const a = w.scores[x];
+    const b = w.scores[y];
+    if (a === undefined || b === undefined) continue;
+    rows.push({
+      week: w.week,
+      x: { score: a, bench: w.bench[x] ?? 0 },
+      y: { score: b, bench: w.bench[y] ?? 0 },
+      result: a > b ? "win" : a < b ? "loss" : "tie",
+    });
+  }
+  return rows;
+}
+
 /** Actual head-to-head record from the real schedule. */
 export function actualRecord(rosterId: number, weeks: Week[]): Record3 {
   const rec = emptyRecord();

@@ -25,6 +25,8 @@ function pairings(n: number, week: number): [number, number][] {
 
 export function demoLeague(): LeagueData {
   const rand = mulberry32(2024);
+  // Separate stream so adding bench scores doesn't reshuffle the starter scores.
+  const benchRand = mulberry32(7);
   const teams: Team[] = NAMES.map((name, i) => ({
     rosterId: i + 1, name, owner: name, avatar: null, division: i % 2 ? 2 : 1,
   }));
@@ -32,15 +34,17 @@ export function demoLeague(): LeagueData {
   const weeks: Week[] = [];
   for (let w = 1; w <= 14; w++) {
     const scores: Record<number, number> = {};
+    const bench: Record<number, number> = {};
     const opponents: Record<number, number> = {};
     teams.forEach((t, i) => {
       scores[t.rosterId] = Math.round((skill[i] + (rand() - 0.5) * 60) * 100) / 100;
+      bench[t.rosterId] = Math.round((30 + benchRand() * 50) * 100) / 100;
     });
     for (const [a, b] of pairings(teams.length, w)) {
       opponents[a + 1] = b + 1;
       opponents[b + 1] = a + 1;
     }
-    weeks.push({ week: w, scores, opponents });
+    weeks.push({ week: w, scores, bench, opponents });
   }
   return {
     leagueId: DEMO_LEAGUE_ID,

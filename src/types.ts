@@ -16,6 +16,8 @@ export interface Division {
 export interface Week {
   week: number;
   scores: Record<number, number>;
+  /** rosterId -> total points scored by players who weren't started. */
+  bench: Record<number, number>;
   /** rosterId -> opponent rosterId (absent on a bye). */
   opponents: Record<number, number>;
 }

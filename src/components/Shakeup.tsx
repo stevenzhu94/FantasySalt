@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { shakeup, sumRecords } from "../stats";
 import type { Division, Record3, Team, Week } from "../types";
+import { Matchup } from "./Matchup";
 
 function ShakeupCard({
-  x, opponents, data, me, showTies, total,
+  x, opponents, data, me, showTies, total, onPick,
 }: {
   x: Team;
   opponents: Team[];
@@ -11,6 +12,7 @@ function ShakeupCard({
   me: number;
   showTies: boolean;
   total?: boolean;
+  onPick: (x: Team, y: Team) => void;
 }) {
   const sum = sumRecords(opponents.map((y) => data[y.rosterId]));
   const cls = (r: Record3) => (r.wins > r.losses ? "win" : r.wins < r.losses ? "loss" : "");
@@ -32,7 +34,20 @@ function ShakeupCard({
           {opponents.map((y) => {
             const r = data[y.rosterId];
             return (
-              <tr key={y.rosterId} className={cls(r)}>
+              <tr
+                key={y.rosterId}
+                className={`pick ${cls(r)}`}
+                tabIndex={0}
+                role="button"
+                aria-label={`${x.name} versus ${y.name}, week by week`}
+                onClick={() => onPick(x, y)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onPick(x, y);
+                  }
+                }}
+              >
                 <td className="left">{y.name}</td>
                 <td>{r.wins}</td>
                 <td>{r.losses}</td>
@@ -59,6 +74,8 @@ export function Shakeup({
 }: { teams: Team[]; weeks: Week[]; divisions: Division[]; me: number }) {
   const data = useMemo(() => shakeup(teams, weeks), [teams, weeks]);
   const [divisionOnly, setDivisionOnly] = useState(false);
+  const [picked, setPicked] = useState<{ x: Team; y: Team } | null>(null);
+  const pick = (x: Team, y: Team) => setPicked({ x, y });
   const showTies = teams.some((x) => Object.values(data[x.rosterId]).some((r) => r.ties));
   const mineFirst = (list: Team[]) =>
     [...list].sort((a, b) => (a.rosterId === me ? -1 : b.rosterId === me ? 1 : 0));
@@ -102,6 +119,7 @@ export function Shakeup({
                       data={data[x.rosterId]}
                       me={me}
                       showTies={showTies}
+                      onPick={pick}
                       total
                     />
                   ))}
@@ -119,10 +137,13 @@ export function Shakeup({
               data={data[x.rosterId]}
               me={me}
               showTies={showTies}
+              onPick={pick}
             />
           ))}
         </div>
       )}
+
+      {picked && <Matchup x={picked.x} y={picked.y} weeks={weeks} onClose={() => setPicked(null)} />}
     </section>
   );
 }

@@ -218,3 +218,22 @@ button.sort { background: none; color: inherit; padding: 0; font-weight: 600; }
 .division-teams td, .division-teams th { border-top: 1px solid var(--line); }
 .division-teams thead th { font-size: 0.8rem; color: var(--muted); }
 .division-teams tr.mine td { font-weight: 700; color: var(--accent); }
+
+.shakeup-card tbody tr.pick { cursor: pointer; }
+.shakeup-card tbody tr.pick:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(0, 0, 0, 0.5);
+}
+.modal { width: 100%; max-width: 560px; max-height: 85vh; display: flex; flex-direction: column; }
+.modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.modal-head h2 { margin: 0; }
+.modal-scroll { overflow-y: auto; }
+.matchup-table th, .matchup-table td { padding: 6px 10px; text-align: left; }
+.matchup-table th:first-child, .matchup-table td:first-child { width: 4.5em; }
+.matchup-table thead th { position: sticky; top: 0; background: var(--surface); }
+.matchup-table td { border-top: 1px solid var(--line); }
+.matchup-table tr.win td { background: var(--win-bg); }
+.matchup-table tr.loss td { background: var(--loss-bg); }

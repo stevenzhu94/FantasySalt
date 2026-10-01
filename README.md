@@ -22,3 +22,7 @@ npm run build    # static build in dist/, deployable to GitHub Pages, Netlify, e
 ```
 
 Use the **demo league** link on the start screen to try it without a Sleeper league.
+
+## Deployment
+
+Every push to `master` runs the tests, builds the site, and publishes it to GitHub Pages at <https://stevenzhu94.github.io/FantasySalt/> via `.github/workflows/deploy.yml`. (One-time setup: in the repo's **Settings → Pages**, set **Source** to **GitHub Actions**.)

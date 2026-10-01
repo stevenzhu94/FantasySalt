@@ -25,7 +25,9 @@ function pairings(n: number, week: number): [number, number][] {
 
 export function demoLeague(): LeagueData {
   const rand = mulberry32(2024);
-  const teams: Team[] = NAMES.map((name, i) => ({ rosterId: i + 1, name, owner: name, avatar: null }));
+  const teams: Team[] = NAMES.map((name, i) => ({
+    rosterId: i + 1, name, owner: name, avatar: null, division: i % 2 ? 2 : 1,
+  }));
   const skill = teams.map(() => 105 + rand() * 25);
   const weeks: Week[] = [];
   for (let w = 1; w <= 14; w++) {
@@ -45,6 +47,7 @@ export function demoLeague(): LeagueData {
     name: "Salt Mine (demo)",
     season: "2025",
     teams,
+    divisions: [{ id: 1, name: "Salt Flats" }, { id: 2, name: "Brine Pit" }],
     weeks,
     history: [{ leagueId: DEMO_LEAGUE_ID, season: "2025" }],
   };

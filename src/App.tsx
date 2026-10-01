@@ -9,6 +9,7 @@ import { Shakeup } from "./components/Shakeup";
 import { ScheduleSwap } from "./components/ScheduleSwap";
 import { RankFrequency } from "./components/RankFrequency";
 import { Summary } from "./components/Summary";
+import { Divisions } from "./components/Divisions";
 import { Avatar } from "./components/Avatar";
 
 const TABS = [
@@ -18,6 +19,7 @@ const TABS = [
   { id: "rank", label: "Weekly Rank" },
   { id: "opp", label: "Opponent Rank" },
   { id: "summary", label: "Rank Breakdown" },
+  { id: "divisions", label: "Divisions" },
 ] as const;
 type Tab = (typeof TABS)[number]["id"];
 
@@ -132,7 +134,7 @@ export default function App() {
           ) : (
             <>
               <nav className="tabs" role="tablist">
-                {TABS.map((t) => (
+                {TABS.filter((t) => t.id !== "divisions" || data.divisions.length > 0).map((t) => (
                   <button
                     key={t.id}
                     role="tab"
@@ -151,11 +153,14 @@ export default function App() {
                 </label>
               </nav>
               {tab === "me" && <MyTeam teams={data.teams} weeks={weeks} me={me} />}
-              {tab === "shakeup" && <Shakeup teams={data.teams} weeks={weeks} me={me} />}
+              {tab === "shakeup" && <Shakeup teams={data.teams} weeks={weeks} divisions={data.divisions} me={me} />}
               {tab === "swap" && <ScheduleSwap teams={data.teams} weeks={weeks} me={me} />}
               {tab === "rank" && <RankFrequency teams={data.teams} weeks={weeks} me={me} />}
               {tab === "opp" && <RankFrequency teams={data.teams} weeks={weeks} me={me} ofOpponent />}
               {tab === "summary" && <Summary teams={data.teams} weeks={weeks} me={me} />}
+              {tab === "divisions" && data.divisions.length > 0 && (
+                <Divisions teams={data.teams} weeks={weeks} divisions={data.divisions} me={me} />
+              )}
             </>
           )
         )}

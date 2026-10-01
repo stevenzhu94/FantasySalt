@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  allPlayRecord, actualRecord, rankFrequency, scheduleSwap, shakeup, summary, weeklyRanks,
+  allPlayRecord, actualRecord, divisionStrength, rankFrequency, scheduleSwap, shakeup, summary,
+  sumRecords, weeklyRanks, winPct,
 } from "./stats";
 import { demoLeague } from "./demo";
 import type { Team, Week } from "./types";
@@ -84,5 +85,35 @@ describe("summary", () => {
     expect(row.oppTop3).toBe(2);
     expect(row.lossesToTop3).toBe(1);
     expect(row.winsVsBottom3).toBe(1);
+  });
+});
+
+describe("divisionStrength", () => {
+  const divTeams = teams.map((t) => ({ ...t, division: t.rosterId <= 2 ? 1 : 2 }));
+  const divisions = [{ id: 1, name: "A" }, { id: 2, name: "B" }];
+
+  it("compares each division against the others", () => {
+    const [first, second] = divisionStrength(divTeams, weeks, divisions);
+    // Division A (1,2) vs B (3,4): wk1 100,90 vs 120,80 -> 2-2; wk2 70,110 vs 95,95 -> 2-2.
+    expect(first.vsOtherDivisions).toEqual({ wins: 4, losses: 4, ties: 0 });
+    // Only week 2 had cross-division games (1v3, 2v4).
+    const a = [first, second].find((d) => d.division.id === 1)!;
+    expect(a.crossDivisionGames).toEqual({ wins: 1, losses: 1, ties: 0 });
+    expect(a.avgPoints).toBe(92.5);
+  });
+
+  it("cross-division all-play records mirror each other", () => {
+    const { teams: t, weeks: w, divisions: d } = demoLeague();
+    const [x, y] = divisionStrength(t, w, d);
+    expect(x.vsOtherDivisions.wins).toBe(y.vsOtherDivisions.losses);
+    expect(x.crossDivisionGames.wins).toBe(y.crossDivisionGames.losses);
+    expect(winPct(x.vsOtherDivisions)).toBeGreaterThanOrEqual(winPct(y.vsOtherDivisions));
+  });
+});
+
+describe("sumRecords", () => {
+  it("adds records", () => {
+    expect(sumRecords([{ wins: 1, losses: 2, ties: 0 }, { wins: 3, losses: 0, ties: 1 }]))
+      .toEqual({ wins: 4, losses: 2, ties: 1 });
   });
 });

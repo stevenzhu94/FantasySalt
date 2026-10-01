@@ -179,3 +179,25 @@ button.sort { background: none; color: inherit; padding: 0; font-weight: 600; }
   .through { margin-left: 0; }
   .stat-value { font-size: 1.6rem; }
 }
+
+.section-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.section-head p { margin: 0; }
+.segmented { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.segmented button { border-radius: 0; background: transparent; color: var(--muted); }
+.segmented button.active { background: var(--accent); color: var(--accent-ink); }
+.division-group + .division-group { margin-top: 20px; }
+.division-group h3 { margin: 0 0 8px; }
+.shakeup-card tr.total td { font-weight: 700; border-top: 2px solid var(--ink); }
+
+.stat-grid.divisions { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.division.mine { border: 2px solid var(--accent); }
+.division-head { display: flex; align-items: center; gap: 10px; }
+.division-head h3 { margin: 0; }
+.rank-badge { background: var(--accent-soft); color: var(--accent); font-weight: 800; border-radius: 6px; padding: 2px 8px; }
+.division-stats { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; margin: 12px 0; align-items: baseline; }
+.division-stats dt { color: var(--muted); font-size: 0.9rem; }
+.division-stats dd { margin: 0; text-align: right; font-weight: 600; }
+.division-stats .stat-value { font-size: 1.6rem; }
+.division-teams td, .division-teams th { border-top: 1px solid var(--line); }
+.division-teams thead th { font-size: 0.8rem; color: var(--muted); }
+.division-teams tr.mine td { font-weight: 700; color: var(--accent); }

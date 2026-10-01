@@ -1,4 +1,4 @@
-import type { Record3, Team, Week } from "./types";
+import type { Division, Record3, Team, Week } from "./types";
 
 const emptyRecord = (): Record3 => ({ wins: 0, losses: 0, ties: 0 });
 
@@ -173,3 +173,60 @@ export const winPct = (r: Record3) => {
   const games = r.wins + r.losses + r.ties;
   return games ? (r.wins + r.ties / 2) / games : 0;
 };
+
+export interface DivisionStrength {
+  division: Division;
+  teams: Team[];
+  avgPoints: number;
+  /** Every team vs every other team in the league, every week. */
+  allPlay: Record3;
+  /** Every team vs every team in other divisions, every week. */
+  vsOtherDivisions: Record3;
+  /** Real games played against other divisions. */
+  crossDivisionGames: Record3;
+  /** Team-weeks finishing in the league's weekly top 3. */
+  top3: number;
+}
+
+/** Divisions ranked strongest first, by win % against the other divisions. */
+export function divisionStrength(teams: Team[], weeks: Week[], divisions: Division[]): DivisionStrength[] {
+  const divisionOf = new Map(teams.map((t) => [t.rosterId, t.division]));
+  return divisions
+    .map((division) => {
+      const members = teams.filter((t) => t.division === division.id);
+      const row: DivisionStrength = {
+        division, teams: members, avgPoints: 0, allPlay: emptyRecord(),
+        vsOtherDivisions: emptyRecord(), crossDivisionGames: emptyRecord(), top3: 0,
+      };
+      let pointSum = 0, teamWeeks = 0;
+      for (const w of weeks) {
+        const ranks = weeklyRanks(w);
+        for (const t of members) {
+          const mine = w.scores[t.rosterId];
+          if (mine === undefined) continue;
+          pointSum += mine;
+          teamWeeks++;
+          if (ranks[t.rosterId] <= 3) row.top3++;
+          for (const [id, pts] of Object.entries(w.scores)) {
+            const other = Number(id);
+            if (other === t.rosterId) continue;
+            tally(row.allPlay, mine, pts);
+            if (divisionOf.get(other) !== division.id) tally(row.vsOtherDivisions, mine, pts);
+          }
+          const opp = w.opponents[t.rosterId];
+          if (opp !== undefined && divisionOf.get(opp) !== division.id) {
+            tally(row.crossDivisionGames, mine, w.scores[opp]);
+          }
+        }
+      }
+      row.avgPoints = teamWeeks ? pointSum / teamWeeks : 0;
+      return row;
+    })
+    .sort((a, b) => winPct(b.vsOtherDivisions) - winPct(a.vsOtherDivisions));
+}
+
+export const sumRecords = (records: Record3[]): Record3 =>
+  records.reduce(
+    (acc, r) => ({ wins: acc.wins + r.wins, losses: acc.losses + r.losses, ties: acc.ties + r.ties }),
+    emptyRecord(),
+  );

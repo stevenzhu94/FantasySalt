@@ -3,6 +3,13 @@ export interface Team {
   name: string;
   owner: string;
   avatar: string | null;
+  /** Division id (1-based), when the league uses divisions. */
+  division?: number;
+}
+
+export interface Division {
+  id: number;
+  name: string;
 }
 
 /** One completed week: each team's score and who they actually played. */
@@ -18,6 +25,8 @@ export interface LeagueData {
   name: string;
   season: string;
   teams: Team[];
+  /** Empty when the league has no divisions. */
+  divisions: Division[];
   weeks: Week[];
   /** Other seasons of the same league, newest first. */
   history: { leagueId: string; season: string }[];

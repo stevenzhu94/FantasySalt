@@ -1,4 +1,4 @@
-import type { LeagueData, Team, Week } from "./types";
+import type { Division, LeagueData, Team, Week } from "./types";
 
 const API = "https://api.sleeper.app/v1";
 
@@ -24,7 +24,8 @@ interface SleeperLeague {
   season: string;
   status: string;
   previous_league_id: string | null;
-  settings: { playoff_week_start?: number };
+  settings: { playoff_week_start?: number; divisions?: number };
+  metadata?: Record<string, string> | null;
 }
 
 interface SleeperUser {
@@ -37,6 +38,7 @@ interface SleeperUser {
 interface SleeperRoster {
   roster_id: number;
   owner_id: string | null;
+  settings?: { division?: number };
 }
 
 interface SleeperMatchup {
@@ -123,8 +125,18 @@ export async function loadLeague(leagueId: string): Promise<LeagueData> {
       name: u?.metadata?.team_name || u?.display_name || `Team ${r.roster_id}`,
       owner: u?.display_name ?? "Unclaimed",
       avatar: avatarUrl(u?.avatar ?? null),
+      division: r.settings?.division || undefined,
     };
   });
+
+  const divisionCount = league.settings.divisions ?? 0;
+  const divisions: Division[] =
+    divisionCount > 1
+      ? Array.from({ length: divisionCount }, (_, i) => ({
+          id: i + 1,
+          name: league.metadata?.[`division_${i + 1}`] || `Division ${i + 1}`,
+        }))
+      : [];
 
   const last = lastCompletedWeek(league, state);
   const weekNums = Array.from({ length: last }, (_, i) => i + 1);
@@ -140,6 +152,7 @@ export async function loadLeague(leagueId: string): Promise<LeagueData> {
     name: league.name,
     season: league.season,
     teams,
+    divisions,
     weeks: weeks.filter((w): w is Week => w !== null),
     history,
   };

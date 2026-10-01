@@ -19,8 +19,8 @@ export function Divisions({
         Schedule luck doesn't count here.
       </p>
       <p>
-        <strong>{strongest.division.name}</strong> is the strongest division.{" "}
-        <strong>{weakest.division.name}</strong> has some explaining to do.
+        <strong>{strongest.division.name}</strong> is beast.{" "}
+        <strong>{weakest.division.name}</strong> is weak.
       </p>
       <div className="stat-grid divisions">
         {rows.map((d, i) => {
